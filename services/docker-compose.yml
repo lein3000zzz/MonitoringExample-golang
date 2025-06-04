@@ -37,8 +37,8 @@ services:
       BOLT_PATH: /data/bot.db
       STORE: bolt
       TEMPLATE_PATHS: /templates/default.tmpl
-      TELEGRAM_ADMIN: 1137258448
-      TELEGRAM_TOKEN: 6277650872:AAEHkOGXYWps0l7sCnQG9KO7RlQuovGNlDk
+      TELEGRAM_ADMIN: YOUR_TG_ID
+      TELEGRAM_TOKEN: YOUR_TOKEN
     volumes:
       - "./alertmanager-bot/templates:/templates"
   jaeger:

@@ -27,7 +27,7 @@ receivers:
   - name: "alertmananger-bot"
     telegram_configs:
       - chat_id: 1137258448
-        bot_token: "6277650872:AAEHkOGXYWps0l7sCnQG9KO7RlQuovGNlDk"
+        bot_token: "YOUR_TOKEN"
         api_url: "https://api.telegram.org"
         send_resolved: true
         parse_mode: HTML
