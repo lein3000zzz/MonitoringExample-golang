@@ -1,0 +1,11 @@
+groups:
+  - name: default
+    rules:
+    - alert: InternalServerError
+      expr: increase(external_service_status_total{status="500"}[1m]) > 0
+      for: 1s
+      labels:
+        severity: critical
+      annotations:
+        summary: "service {{ $labels.service }} with path {{ $labels.path }} returned status 500"
+        description: "{{ $labels.path }} of service {{ $labels.service }} returned status {{ $labels.status }}"

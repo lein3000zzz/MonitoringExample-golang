@@ -1,0 +1,51 @@
+global:
+  resolve_timeout: 5m
+  smtp_from: park.alerting@mail.ru
+  smtp_hello: mail.ru
+  smtp_smarthost: smtp.mail.ru:465
+  smtp_auth_username: park.alerting@mail.ru
+  smtp_auth_password: TN2hPhu0UgS6CArkAUnD # not pp pass: gb=D>zTa8)uLkndj@peE
+  smtp_require_tls: false
+  telegram_api_url: "https://api.telegram.org"
+
+route:
+  group_by:
+    - "alertname"
+  group_wait: 30s
+  group_interval: 10s
+  repeat_interval: 20s
+  receiver: "email"
+  routes:
+    - receiver: alertmananger-bot
+      continue: true
+    - receiver: email
+
+templates:
+  - "/etc/alertmanager/*.tmpl"
+
+receivers:
+  - name: "alertmananger-bot"
+    telegram_configs:
+      - chat_id: 1137258448
+        bot_token: "6277650872:AAEHkOGXYWps0l7sCnQG9KO7RlQuovGNlDk"
+        api_url: "https://api.telegram.org"
+        send_resolved: true
+        parse_mode: HTML
+        message: '{{ template "telegram.default" . }}'
+
+  - name: email
+    email_configs:
+      - send_resolved: false
+        to: park.alerting@mail.ru
+        headers:
+          From: park.alerting@mail.ru
+          Subject: '{{ template "email.default.subject" . }}'
+          To: park.alerting@mail.ru
+        html: '{{ template "email.default.html" . }}'
+
+inhibit_rules:
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["alertname", "instance"]

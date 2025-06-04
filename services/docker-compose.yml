@@ -1,0 +1,84 @@
+version: "3"
+
+services:
+  consul:
+    image: hashicorp/consul
+    ports:
+      - "8500:8500"
+  vault:
+    image: hashicorp/vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: 123
+    ports:
+      - "8200:8200"
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090
+    volumes:
+      - "./prometheus:/etc/prometheus"
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - "9093:9093"
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    volumes:
+      - "./alertmanager:/etc/alertmanager"
+  alertmanager-bot:
+    image: metalmatze/alertmanager-bot
+    command:
+      - "--listen.addr=0.0.0.0:8080"
+    environment:
+      ALERTMANAGER_URL: http://alertmanager:9093
+      BOLT_PATH: /data/bot.db
+      STORE: bolt
+      TEMPLATE_PATHS: /templates/default.tmpl
+      TELEGRAM_ADMIN: 1137258448
+      TELEGRAM_TOKEN: 6277650872:AAEHkOGXYWps0l7sCnQG9KO7RlQuovGNlDk
+    volumes:
+      - "./alertmanager-bot/templates:/templates"
+  jaeger:
+    image: jaegertracing/all-in-one
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+  grafana:
+    image: grafana/grafana
+    links:
+      - prometheus:prometheus # datasource = http://prometheus:9090
+      - statsd:statsd # datasource = http://statsd:81
+    ports:
+      - 3000:3000
+    user: "104"
+  node-exporter:
+    image: prom/node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.ignored-mount-points
+      - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
+    ports:
+      - 9100:9100
+    restart: always
+    deploy:
+      mode: global
+
+  statsd:
+    image: hopsoft/graphite-statsd
+    ports:
+      - 81:81
+      # - 8085:80
+      - 2003-2004:2003-2004
+      - 2023-2024:2023-2024
+      - 8125:8125/udp
+      - 8126:8126
+    expose:
+      - 81
